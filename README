@@ -1,0 +1,99 @@
+ Pyngyn Full-Stack Dashboard
+
+A simple full-stack application with a Node.js/Express backend and React frontend, using OpenAI for generating summaries and demo data for task management.
+
+ Overview
+This project is a role-based dashboard for:
+- Individual Contributor (IC): View tasks (pending, due soon, overdue), quick docs, and recent activity.
+- Manager: See project overviews (completion rates, blockers), shared quick docs, and an AI-generated weekly summary.
+- Director: Monitor KPIs (completion %, overdue trends), quick doc usage, and an AI-generated executive summary.
+
+The app uses demo data (in-memory tasks, projects, users) and OpenAI's GPT-3.5-turbo to generate natural language summaries for Manager and Director dashboards. It’s a single deployment app, where the backend serves both APIs and the React frontend.
+
+ Features
+- Backend: Node.js/Express with REST APIs (`/api/dashboard/ic`, `/api/dashboard/manager`, `/api/dashboard/director`).
+- Frontend: React with Tailwind CSS for styled, responsive dashboards (cards, tables, progress bars).
+- OpenAI Integration: Generates summaries for Manager (project progress) and Director (organizational health). Falls back to rule-based summaries if OpenAI fails.
+- Demo Data: 2 spaces (Marketing, Finance), 3 projects, 10 tasks, 4 quick docs, 3 users (Alice: IC, Bob: Manager, Charlie: Director).
+- Single Deployment: Backend serves static React build (`client/build`) and APIs.
+
+ Setup
+1. Clone and Install:
+   
+   cd pyngyn-fullstack
+   npm install
+   cd client
+   npm install
+   cd ..
+   
+
+2. Set Environment Variables:
+   Create a `.env` file in the root:
+   plaintext
+   OPENAI_API_KEY=your_openai_api_key_here
+   PORT=3000
+   
+   Replace `your_openai_api_key_here` with a valid OpenAI API key. Without it, the app uses fallback summaries.
+
+3. Build Frontend:
+   
+   cd client
+   npm run build
+   cd ..
+   
+
+4. Run Application:
+   
+   node index.js
+   
+   - Frontend: Open `http://localhost:3000` in a browser.
+   - APIs:
+     
+     curl "http://localhost:3000/api/dashboard/ic?user_id=1"
+     curl "http://localhost:3000/api/dashboard/manager?user_id=2"
+     curl "http://localhost:3000/api/dashboard/director?user_id=3"
+     
+
+ OpenAI Implementation
+- Model: Uses `gpt-3.5-turbo` with `max_tokens` (150 for Manager, 200 for Director) for concise summaries.
+- Manager Summary: Takes project overviews (completion rates, pending tasks, blockers) and generates a weekly progress summary (e.g., "Focus on resolving blockers in Campaign A").
+- Director Summary: Uses KPIs (completion %, overdue trends) and quick doc usage to generate an executive summary (e.g., "40% tasks completed, bottlenecks in Q4 Forecast").
+- Prompts: Structured JSON inputs ensure relevant, actionable summaries.
+- Error Handling: If OpenAI fails (e.g., invalid key, rate limits), rule-based fallback summaries are used (e.g., "Team progress: 2 projects, 3 overdue tasks").
+- File: `src/services/aiService.js` handles OpenAI API calls.
+
+ Demo Data
+- Spaces: Marketing, Finance.
+- Projects: Campaign A (Marketing), Budget Planning, Q4 Forecast (Finance).
+- Tasks: 10 tasks with titles, due dates, statuses (pending/completed), assigned to users.
+- Quick Docs: 4 documents with titles and collaborators.
+- Users:
+  - Alice (ID: 1, IC, Campaign A).
+  - Bob (ID: 2, Manager, Campaign A, Budget Planning).
+  - Charlie (ID: 3, Director, all projects).
+- Storage: In-memory (no database) in `src/services/dataService.js`.
+
+ Project Structure
+- Backend:
+  - `index.js`: Express server, serves APIs and React build.
+  - `src/config/config.js`: Port, OpenAI key, date (2025-09-03).
+  - `src/controllers/`: API logic for each role.
+  - `src/models/`: Data models (Space, Project, Task, QuickDoc, User).
+  - `src/routes/`: API routes.
+  - `src/services/`: Data and AI services.
+- Frontend:
+  - `client/src/App.js`: Main app with user selection.
+  - `client/src/components/`: Role-based dashboards with Tailwind styling.
+  - `client/public/index.html`: HTML template with Tailwind CDN.
+- Build: `client/build` contains static React files served by Express.
+
+ Usage
+- Frontend: Visit `http://localhost:3000`, select a user (Alice, Bob, Charlie) to view their dashboard.
+- Styling: Responsive cards, tables, progress bars, and summaries (red for overdue, green for completed, blue for summaries).
+- APIs: Fetch data with `user_id` query (e.g., `?user_id=1` for Alice).
+
+ Troubleshooting
+- Build Missing: Run `npm run build` in `client/` if `http://localhost:3000` is blank.
+- OpenAI Errors: Check `.env` for valid `OPENAI_API_KEY`. Fallback summaries are used if invalid.
+- Port Conflict: Change `PORT` in `.env` or run `npx kill-port 3000`.
+- Dependencies: Ensure versions match `package.json` (e.g., `express@4.21.1`, `dotenv@16.4.5`).

@@ -1,0 +1,6 @@
+module.exports = {
+  port: process.env.PORT || 3000,
+  openaiApiKey: process.env.OPENAI_API_KEY,
+  currentDate: new Date('2025-09-03'),
+  openaiModel: 'gpt-3.5-turbo'
+};
